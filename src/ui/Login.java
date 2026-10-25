@@ -74,6 +74,9 @@ public class Login {
             //验证密码是否正确
             if(password.equals(user.getPassword())){
                 System.out.println("登录成功");
+                FightingGame game = new FightingGame();
+                game.gameStart(username);
+
                 break;
             }else{
                 if(i==2){
