@@ -3,6 +3,7 @@ package ui;
 import domain.User;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Login {
@@ -33,6 +34,61 @@ public class Login {
 
     public void login(ArrayList<User> users){
         System.out.println("用户选择了登录");
+        Scanner sc = new Scanner(System.in);
+        //判断用户名
+        //不存在：
+        //存在：禁用
+        //存在，验证验证码
+        //存在，验证密码是否正确(三次)
+        System.out.println("请输入用户名");
+        //用户名如果未注册提示：用户名未注册，请先注册
+        //用户被锁定提示：用户xxx已经锁定，请联系黑马程序员官方客服：XXX-XXXXX
+        String username = sc.next();
+        if(!containsUsername(username,users)){
+            System.out.println("当前用户名"+username+"未注册");
+            //用户名不存在就退出登录 选择注册
+            return;
+        }
+        int index = findIndex(username,users);
+        User user = users.get(index);
+        if(!user.isStatus()){
+            System.out.println("用户"+username+"已经锁定，请联系黑马程序员官方客服：XXX-XXXXX");
+            return;
+        }
+
+        for (int i=0;i<3;i++) {
+            System.out.println("请输入密码");
+            String password = sc.next();
+
+            while (true) {
+                String rightcode=getCode();
+                System.out.println("验证码为:"+rightcode);
+                System.out.println("请输入验证码");
+                String code= sc.next();
+                if(code.equalsIgnoreCase(rightcode)){
+                    break;
+                }else{
+                    System.out.println("验证码输入错误");
+                }
+            }
+            //验证密码是否正确
+            if(password.equals(user.getPassword())){
+                System.out.println("登录成功");
+                break;
+            }else{
+                if(i==2){
+                    user.setStatus(false);
+                    System.out.println("用户"+username+"已经锁定，请联系黑马程序员官方客服：XXX-XXXXX");
+                }else{
+                    System.out.println("密码错误，还剩余"+(2-i)+"次机会");
+                }
+            }
+
+        }
+
+
+
+
     }
 
     public void register(ArrayList<User> users){
@@ -130,5 +186,35 @@ public class Login {
         return new int[]{charcount,numcount,othercount};
     }
 
+    public String getCode(){
+        // 长度为5
+        //由4位大写或者小写字母和1位数字组成，同一个字母可重复
+        //数字可以出现在任意位置
+        ArrayList<Character> chars = new ArrayList<>();
+        for (int i = 0; i < 26; i++) {
+            chars.add((char)('a'+i));
+            chars.add((char)('A'+i));
+        }
+        StringBuilder sb=new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            sb.append(chars.get(new Random().nextInt(chars.size())));
+        }
+        sb.append(new Random().nextInt(10));
+        char[] charArr = sb.toString().toCharArray();
+        int index=new Random().nextInt(charArr.length);
+        char temp=charArr[index];
+        charArr[index]=charArr[charArr.length-1];
+        charArr[charArr.length-1]=temp;
+        return new String(charArr);
+    }
+
+    public int findIndex(String username,ArrayList<User> users){
+        for (int i = 0; i < users.size(); i++) {
+            if(users.get(i).getUsername().equals(username)){
+                return i;
+            }
+        }
+        return -1;
+    }
 
 }
